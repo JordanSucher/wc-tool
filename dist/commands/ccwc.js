@@ -9,32 +9,34 @@ class ccwc extends Command {
     }
     async run() {
         const { flags, args } = await this.parse(ccwc);
-        const validFile = args.filePath && fs.existsSync(args.filePath);
-        if (!validFile) {
+        const isPiped = !process.stdin.isTTY;
+        const validFile = args.arg1 && fs.existsSync(args.arg1);
+        const textBody = isPiped ? args.arg1 : validFile ? fs.readFileSync(args.arg1, "utf8") : "";
+        if (!validFile && !isPiped) {
             this.log("\t" + "Please provide a valid filepath");
         }
         else if (flags.bytes) {
-            const fileSize = fs.statSync(args.filePath).size;
-            this.log(ccwc.formatOutput(args.filePath, fileSize));
+            const fileSize = isPiped ? new Blob([textBody]).size : fs.statSync(args.arg1).size;
+            this.log(ccwc.formatOutput(isPiped ? "" : args.arg1, fileSize));
         }
         else if (flags.lines) {
-            const fileLines = fs.readFileSync(args.filePath, "utf8").split("\n").length;
-            this.log(ccwc.formatOutput(args.filePath, fileLines));
+            const fileLines = textBody.split("\n").length;
+            this.log(ccwc.formatOutput(isPiped ? "" : args.arg1, fileLines));
         }
         else if (flags.words) {
-            const fileWords = fs.readFileSync(args.filePath, "utf8").split('\n').filter((line) => line.length > 0).flatMap((line) => line.split(' ')).length;
-            this.log(ccwc.formatOutput(args.filePath, fileWords));
+            const fileWords = textBody.split('\n').filter((line) => line.length > 0).flatMap((line) => line.split(' ')).length;
+            this.log(ccwc.formatOutput(isPiped ? "" : args.arg1, fileWords));
         }
         else if (flags.characters) {
-            const fileCharacters = fs.readFileSync(args.filePath, "utf8").replace(/\n/g, "").length;
-            this.log(ccwc.formatOutput(args.filePath, fileCharacters));
+            const fileCharacters = textBody.replace(/\n/g, "").length;
+            this.log(ccwc.formatOutput(isPiped ? "" : args.arg1, fileCharacters));
         }
         else {
-            const fileSize = fs.statSync(args.filePath).size;
-            const fileLines = fs.readFileSync(args.filePath, "utf8").split("\n").length;
-            const fileWords = fs.readFileSync(args.filePath, "utf8").split('\n').filter((line) => line.length > 0).flatMap((line) => line.split(' ')).length;
-            const fileCharacters = fs.readFileSync(args.filePath, "utf8").replace(/\n/g, "").length;
-            this.log(ccwc.formatOutput(args.filePath, fileSize, fileLines, fileWords, fileCharacters));
+            const fileSize = isPiped ? new Blob([textBody]).size : fs.statSync(args.arg1).size;
+            const fileLines = textBody.split("\n").length;
+            const fileWords = textBody.split('\n').filter((line) => line.length > 0).flatMap((line) => line.split(' ')).length;
+            const fileCharacters = textBody.replace(/\n/g, "").length;
+            this.log(ccwc.formatOutput(isPiped ? "" : args.arg1, fileSize, fileLines, fileWords, fileCharacters));
         }
     }
 }
@@ -45,7 +47,7 @@ ccwc.flags = {
     characters: Flags.boolean({ char: "m" })
 };
 ccwc.args = {
-    filePath: Args.string()
+    arg1: Args.string()
 };
 module.exports = ccwc;
 //# sourceMappingURL=ccwc.js.map
