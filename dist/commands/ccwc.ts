@@ -13,6 +13,10 @@ class ccwc extends Command {
 	static args = {
 		filePath: Args.string()
 	}
+
+	static formatOutput(filePath: string = "", ...args : string[]) {
+		return "\t" + `${args.join("\t")} ${filePath}`
+	}
 	
 	async run(): Promise<void> {
 		const {flags, args} = await this.parse(ccwc)
@@ -23,19 +27,19 @@ class ccwc extends Command {
 		}
 		else if (flags.bytes) {
 			const fileSize = fs.statSync(args.filePath).size;
-			this.log("\t" + `${fileSize} ${args.filePath}`);
+			this.log(ccwc.formatOutput(args.filePath, fileSize))
 		}
 		else if (flags.lines) {
 			const fileLines = fs.readFileSync(args.filePath, "utf8").split("\n").length;
-			this.log("\t" + `${fileLines} ${args.filePath}`);
+			this.log(ccwc.formatOutput(args.filePath, fileLines))
 		}
 		else if (flags.words) {
 			const fileWords = fs.readFileSync(args.filePath, "utf8").split('\n').filter((line: string)=>line.length>0).flatMap((line : string)=>line.split(' ')).length
-			this.log("\t" + `${fileWords} ${args.filePath}`);
+			this.log(ccwc.formatOutput(args.filePath, fileWords))
 		}
 		else if (flags.characters) {
 			const fileCharacters = fs.readFileSync(args.filePath, "utf8").replace(/\n/g, "").length
-			this.log("\t" + `${fileCharacters} ${args.filePath}`);
+			this.log(ccwc.formatOutput(args.filePath, fileCharacters))
 		}
 		else {
 			const fileSize = fs.statSync(args.filePath).size;
@@ -43,7 +47,7 @@ class ccwc extends Command {
 			const fileWords = fs.readFileSync(args.filePath, "utf8").split('\n').filter((line: string)=>line.length>0).flatMap((line : string)=>line.split(' ')).length
 			const fileCharacters = fs.readFileSync(args.filePath, "utf8").replace(/\n/g, "").length
 
-			this.log("\t" + fileSize + "\t" + fileLines + "\t" + fileWords + "\t" + fileCharacters + ` ${args.filePath}`);
+			this.log(ccwc.formatOutput(args.filePath, fileSize, fileLines, fileWords, fileCharacters));
 		}
 	}
 
