@@ -1,0 +1,6 @@
+{
+    "cmake.configureOnOpen": false,
+    "search.exclude": {
+        "**/node_modules": false
+    }
+}
